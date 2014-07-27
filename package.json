@@ -21,5 +21,11 @@
   "bugs": {
     "url": "https://github.com/alexanderGugel/honigtopf/issues"
   },
-  "homepage": "https://github.com/alexanderGugel/honigtopf"
+  "homepage": "https://github.com/alexanderGugel/honigtopf",
+  "dependencies": {
+    "bencode": "^0.6.0",
+    "compact2string": "^1.2.0",
+    "hat": "0.0.3",
+    "lodash": "^2.4.1"
+  }
 }
