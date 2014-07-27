@@ -1,1 +1,1 @@
-module.exports = exports = require('./lib/honeypot');
+module.exports = exports = require('./lib/Honeypot');
