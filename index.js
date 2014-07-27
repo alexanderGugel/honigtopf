@@ -18,7 +18,6 @@ var Honeypot = function (options) {
   options.port = options.port || 6881;
 
   events.EventEmitter.call(this);
-
   var socket = dgram.createSocket('udp4');
 
   socket.on('listening', function () {
@@ -34,6 +33,7 @@ var Honeypot = function (options) {
 
   socket.on('message', function (message, rinfo) {
     logger.debug('Received message ' + message + ' from ' + rinfo.address + ':' + rinfo.port);
+    this.emit('message', message, rinfo);
   });
 
   socket.bind(options.port);
