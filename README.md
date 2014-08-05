@@ -13,3 +13,4 @@ Further reading:
 in BitTorrent Mainline DHT](http://www.cs.helsinki.fi/u/lxwang/publications/security.pdf)
 * [dht.js](https://github.com/indutny/dht.js) - True, complete implementation of DHT Protocol written in JavaScript for Node.JS.
 * [BEP 5](http://www.bittorrent.org/beps/bep_0005.html) - DHT Protocol specification.
+* [bittorrent-dht](https://github.com/feross/bittorrent-dht) - A more feature complete implementation of BEP5 in Node.JS
