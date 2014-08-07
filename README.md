@@ -1,7 +1,7 @@
 **WIP** Nothing works yet!
 
-honigtopf
-=========
+honigtopf (honeypot in German)
+==============================
 
 A honeypot for the BitTorrent Mainline DHT network.
 
