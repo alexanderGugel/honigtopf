@@ -73,7 +73,9 @@ Honeypot.prototype.processMessage = function (message, rinfo) {
     this.transact({
         t: transaction.t,
         y: 'r',
-        r: transaction.a
+        r: {
+          id: this.nodeIdBuffer
+        }
     }, rinfo.address, rinfo.port);
   }
 
