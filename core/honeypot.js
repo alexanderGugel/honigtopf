@@ -25,7 +25,7 @@ Honeypot.prototype.BOOTSTRAP_NODES = [
   'dht.transmissionbt.com:6881'
 ];
 
-Honeypot.prototype.inject = function (address, port, callback) {
+Honeypot.prototype.inject = _.throttle(function (address, port, callback) {
   console.log(arguments);
   this.transact({
     y: 'q',
@@ -35,9 +35,9 @@ Honeypot.prototype.inject = function (address, port, callback) {
       target: this.nodeIdBuffer
     }
   }, address, port, callback);
-};
+}, 10);
 
-Honeypot.prototype.transact =  _.throttle(function (transaction, address, port, callback) {
+Honeypot.prototype.transact =  function (transaction, address, port, callback) {
   if (port <= 0 || port > 65536) {
     return;
   }
@@ -52,7 +52,7 @@ Honeypot.prototype.transact =  _.throttle(function (transaction, address, port, 
       transactionId: transactionId.toString('hex')
     });
   });
-}, 10);
+};
 
 Honeypot.prototype.processMessage = function (message, rinfo) {
   var transaction = bencode.decode(message);
