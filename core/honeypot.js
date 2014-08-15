@@ -6,8 +6,8 @@ var bencode = require('bencode'),
 
 var Honeypot = function (infoHash) {
   this.nodeIdBuffer = new Buffer(infoHash, 'hex');
-  // this.nodeIdBuffer[this.nodeIdBuffer.length-1] = this.nodeIdBuffer[this.nodeIdBuffer.length-1]++;
-  // this.nodeIdBuffer = new Buffer(this.nodeIdBuffer.toString('hex'), 'hex');
+  this.nodeIdBuffer[this.nodeIdBuffer.length-1] = this.nodeIdBuffer[this.nodeIdBuffer.length-1]++;
+  this.nodeIdBuffer = new Buffer(this.nodeIdBuffer.toString('hex'), 'hex');
   this.socket = dgram.createSocket('udp4');
   var self = this;
   this.socket.on('message', this.processMessage.bind(this));
@@ -26,18 +26,18 @@ Honeypot.prototype.BOOTSTRAP_NODES = [
 ];
 
 Honeypot.prototype.inject = _.throttle(function (address, port, callback) {
-  console.log(arguments);
   this.transact({
     y: 'q',
     q: 'find_node',
     a: {
       id: this.nodeIdBuffer,
-      target: this.nodeIdBuffer
+      target: new Buffer([~~(Math.random() * 256), ~~(Math.random() * 256)])
     }
   }, address, port, callback);
-}, 10);
+}, 1);
 
 Honeypot.prototype.transact =  function (transaction, address, port, callback) {
+  port = parseInt(port);
   if (port <= 0 || port > 65536) {
     return;
   }
@@ -56,11 +56,25 @@ Honeypot.prototype.transact =  function (transaction, address, port, callback) {
 
 Honeypot.prototype.processMessage = function (message, rinfo) {
   var transaction = bencode.decode(message);
-  transaction.y = transaction.y.toString();
-  transaction.q = transaction.q && transaction.q.toString();
+
+  if (transaction.q) {
+    transaction.q = transaction.q.toString();
+  }
+
+  if (transaction.y) {
+    transaction.y = transaction.y.toString();
+  }
 
   if (transaction.y !== 'r') {
     console.log(transaction);
+  }
+
+  if (transaction.q === 'ping') {
+    this.transact({
+        t: transaction.t,
+        y: 'r',
+        r: transaction.a
+    }, rinfo.address, rinfo.port);
   }
 
   if (transaction.r && transaction.r.nodes && Buffer.isBuffer(transaction.r.nodes)) {
