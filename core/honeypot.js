@@ -49,7 +49,7 @@ Honeypot.prototype.transact =  function (transaction, address, port, callback) {
   var packet = bencode.encode(preparedMessage);
   this.socket.send(packet, 0, packet.length, port, address, function(err) {
     callback(err, {
-      transactionId: transactionId.toString('hex')
+      transactionId: preparedMessage.t.toString('hex')
     });
   });
 };
