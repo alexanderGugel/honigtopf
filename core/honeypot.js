@@ -26,6 +26,7 @@ Honeypot.prototype.BOOTSTRAP_NODES = [
 ];
 
 Honeypot.prototype.inject = function (address, port, callback) {
+  console.log(arguments);
   this.transact({
     y: 'q',
     q: 'find_node',
@@ -37,6 +38,9 @@ Honeypot.prototype.inject = function (address, port, callback) {
 };
 
 Honeypot.prototype.transact =  _.throttle(function (transaction, address, port, callback) {
+  if (port <= 0 || port > 65536) {
+    return;
+  }
   callback = callback || _.noop;
   var transactionId = new Buffer([~~(Math.random() * 256), ~~(Math.random() * 256)]);
   var preparedMessage = _.defaults(transaction, {
@@ -67,5 +71,5 @@ Honeypot.prototype.processMessage = function (message, rinfo) {
   }
 };
 
-// new Honeypot('247A424720EF8AC435C31D62A33CA16BA63C56E4');
-new Honeypot(hat(160));
+new Honeypot('247A424720EF8AC435C31D62A33CA16BA63C56E4');
+// new Honeypot(hat(160));
