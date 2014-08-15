@@ -6,12 +6,14 @@ var bencode = require('bencode'),
 
 var Honeypot = function (infoHash) {
   this.nodeIdBuffer = new Buffer(infoHash, 'hex');
-  this.nodeIdBuffer[this.nodeIdBuffer.length-1] = this.nodeIdBuffer[this.nodeIdBuffer.length-1]++;
+  this.nodeIdBuffer[this.nodeIdBuffer.length-1] = this.nodeIdBuffer[this.nodeIdBuffer.length-1] - 1;
   this.nodeIdBuffer = new Buffer(this.nodeIdBuffer.toString('hex'), 'hex');
+  // this.nodeIdBuffer = new Buffer(hat(160), 'hex');
+
   this.socket = dgram.createSocket('udp4');
   var self = this;
   this.socket.on('message', this.processMessage.bind(this));
-  this.socket.bind(6881, function() {
+  this.socket.bind(6881, function() { // 6881
     _.each(this.BOOTSTRAP_NODES, function (BOOTSTRAP_NODE) {
       BOOTSTRAP_NODE = BOOTSTRAP_NODE.split(':');
       this.inject(BOOTSTRAP_NODE[0], BOOTSTRAP_NODE[1]);
@@ -71,11 +73,11 @@ Honeypot.prototype.processMessage = function (message, rinfo) {
 
   if (transaction.q === 'ping') {
     this.transact({
-        t: transaction.t,
-        y: 'r',
-        r: {
-          id: this.nodeIdBuffer
-        }
+      t: transaction.t,
+      y: 'r',
+      r: {
+        id: this.nodeIdBuffer
+      }
     }, rinfo.address, rinfo.port);
   }
 
