@@ -33,7 +33,7 @@ Honeypot.prototype.inject = _.throttle(function (address, port, callback) {
     q: 'find_node',
     a: {
       id: this.nodeIdBuffer,
-      target: new Buffer([~~(Math.random() * 256), ~~(Math.random() * 256)])
+      target: new Buffer(hat(160), 'hex')
     }
   }, address, port, callback);
 }, 1);
