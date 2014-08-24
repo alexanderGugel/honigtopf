@@ -2,23 +2,54 @@ var bencode = require('bencode'),
     compact2string = require('compact2string'),
     _ = require('lodash'),
     hat = require('hat'),
-    dgram = require('dgram');
+    dgram = require('dgram'),
+    portfinder = require('portfinder'),
+    logger = require('./logger');
 
-var Honeypot = function (infoHash) {
-  this.nodeIdBuffer = new Buffer(infoHash, 'hex');
+var _init = function() {
+  logger.debug('Initializing ' + this.infoHash + '...');
+
+  this.nodeIdBuffer = new Buffer(this.infoHash, 'hex');
   this.nodeIdBuffer[this.nodeIdBuffer.length-1] = this.nodeIdBuffer[this.nodeIdBuffer.length-1] - 1;
   this.nodeIdBuffer = new Buffer(this.nodeIdBuffer.toString('hex'), 'hex');
   // this.nodeIdBuffer = new Buffer(hat(160), 'hex');
 
   this.socket = dgram.createSocket('udp4');
-  var self = this;
   this.socket.on('message', this.processMessage.bind(this));
-  this.socket.bind(6881, function() { // 6881
+  this.socket.bind(this.port, function() { // 6881
+    logger.debug('Successfully initialized honeypot for ' + this.infoHash);
+    logger.debug('Successfully created honeypot for ' + this.infoHash);
     _.each(this.BOOTSTRAP_NODES, function (BOOTSTRAP_NODE) {
       BOOTSTRAP_NODE = BOOTSTRAP_NODE.split(':');
       this.inject(BOOTSTRAP_NODE[0], BOOTSTRAP_NODE[1]);
     }, this);
   }.bind(this));
+};
+
+var Honeypot = function (infoHash, port) {
+  if (!infoHash) {
+    logger.warn('Tried creating new honeypot, but didn\'t specify infoHash');
+    return;
+  }
+  logger.info('Creating new honeypot for infoHash ' + this.infoHash + '...');
+  this.infoHash = infoHash;
+  this.port = port;
+  if (!port) {
+    logger.debug('Searching unused port for honeypot ' + this.infoHash + ' using portfinder...');
+    portfinder.getPort(function (err, port) {
+      if (err) {
+        logger.error('Failed finding port using portfinder: ' + err.message);
+        logger.error(JSON.stringify(err));
+        return;
+      }
+      this.port = port;
+      logger.debug('Port ' + this.port + ' for honeypot ' + this.infoHash + ' has been found and provisioned');
+      _init.call(this);
+    }.bind(this));
+  } else {
+    logger.debug('Port for honeypot ' + this.infoHash + ' specified');
+    _init.call(this);
+  }
 };
 
 Honeypot.prototype.BOOTSTRAP_NODES = [
@@ -36,9 +67,9 @@ Honeypot.prototype.inject = _.throttle(function (address, port, callback) {
       target: new Buffer(hat(160), 'hex')
     }
   }, address, port, callback);
-}, 1);
+}, 100);
 
-Honeypot.prototype.transact =  function (transaction, address, port, callback) {
+Honeypot.prototype.transact = function (transaction, address, port, callback) {
   port = parseInt(port);
   if (port <= 0 || port > 65536) {
     return;
@@ -72,6 +103,14 @@ Honeypot.prototype.processMessage = function (message, rinfo) {
   }
 
   if (transaction.q === 'ping') {
+    this.transact({
+      t: transaction.t,
+      y: 'r',
+      r: {
+        id: this.nodeIdBuffer
+      }
+    }, rinfo.address, rinfo.port);
+  } else if (transaction.q === 'find_node') {
     this.transact({
       t: transaction.t,
       y: 'r',

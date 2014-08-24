@@ -29,7 +29,8 @@
     "dht.js": "^0.2.16",
     "hat": "0.0.3",
     "lodash": "^2.4.1",
-    "lru-cache": "^2.5.0"
+    "lru-cache": "^2.5.0",
+    "portfinder": "^0.2.1"
   },
   "devDependencies": {
     "mocha": "^1.21.0"
